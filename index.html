@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signing Web App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="options">
+            <label for="text-color">Text Color:</label>
+            <input type="color" id="text-color">
+            
+            <label for="background-color">Background Color:</label>
+            <input type="color" id="background-color">
+            
+            <label for="font-size">Font Size:</label>
+            <select class="custom-select" id="font-size">
+                <option value="normal">Normal</option>
+                <option value="2">2px</option>
+                <option value="5">5px</option>
+                <option value="10">10px</option>
+                <option value="20">20px</option>
+                <option value="30">30px</option>
+                <option value="40">40px</option>
+                <option value="50">50px</option>
+            </select>
+            
+        </div>
+        
+        <canvas id="signature-pad" width="800" height="500"></canvas>
+        
+        <div class="buttons">
+            <button id="clear-btn">Clear</button>
+            <button id="save-btn">Save & Download</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

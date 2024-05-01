@@ -11,13 +11,43 @@ document.addEventListener("DOMContentLoaded", function() {
     ctx.font = defaultFontWeight + ' ' + defaultFontSize + 'px Arial';
     ctx.strokeStyle = '#000'; // Default color
 
-    // Signature pad functionality
-    canvas.addEventListener('mousedown', function(e) {
+    // Signature pad functionality for mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    // Signature pad functionality for touch events
+    canvas.addEventListener('touchstart', startDrawingTouch);
+    canvas.addEventListener('touchmove', drawTouch);
+    canvas.addEventListener('touchend', stopDrawingTouch);
+
+    // Clear button functionality
+    document.getElementById('clear-btn').addEventListener('click', clearCanvas);
+
+    // Save button functionality
+    document.getElementById('save-btn').addEventListener('click', saveSignature);
+
+    // Text color functionality
+    document.getElementById('text-color').addEventListener('input', changeTextColor);
+
+    // Background color functionality
+    document.getElementById('background-color').addEventListener('input', changeBackgroundColor);
+
+    // Font size picker functionality
+    document.getElementById('font-size').addEventListener('change', changeFontSize);
+
+    // Font weight functionality
+    document.getElementById('font-weight').addEventListener('change', changeFontWeight);
+
+    // Function to start drawing
+    function startDrawing(e) {
         isDrawing = true;
         [lastX, lastY] = [e.offsetX, e.offsetY];
-    });
+    }
 
-    canvas.addEventListener('mousemove', function(e) {
+    // Function to draw
+    function draw(e) {
         if (!isDrawing) return;
         ctx.lineWidth = document.getElementById('font-size').value; // Update line width based on font size picker
         ctx.beginPath();
@@ -25,52 +55,75 @@ document.addEventListener("DOMContentLoaded", function() {
         [lastX, lastY] = [e.offsetX, e.offsetY];
         ctx.lineTo(lastX, lastY);
         ctx.stroke();
-    });
+    }
 
-    canvas.addEventListener('mouseup', function() {
+    // Function to stop drawing
+    function stopDrawing() {
         isDrawing = false;
-    });
+    }
 
-    canvas.addEventListener('mouseout', function() {
+    // Function to start drawing for touch events
+    function startDrawingTouch(e) {
+        isDrawing = true;
+        var touch = e.touches[0];
+        var rect = canvas.getBoundingClientRect();
+        [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
+    }
+
+    // Function to draw for touch events
+    function drawTouch(e) {
+        if (!isDrawing) return;
+        var touch = e.touches[0];
+        var rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = document.getElementById('font-size').value; // Update line width based on font size picker
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
+        ctx.lineTo(lastX, lastY);
+        ctx.stroke();
+    }
+
+    // Function to stop drawing for touch events
+    function stopDrawingTouch() {
         isDrawing = false;
-    });
+    }
 
-    // Clear button functionality
-    document.getElementById('clear-btn').addEventListener('click', function() {
+    // Function to clear the canvas
+    function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
+    }
 
-    // Save button functionality
-    document.getElementById('save-btn').addEventListener('click', function() {
+    // Function to save the signature
+    function saveSignature() {
         var dataURL = canvas.toDataURL('image/png');
         var link = document.createElement('a');
         link.href = dataURL;
         link.download = 'signature.png';
         link.click();
-    });
+    }
 
-    // Text color functionality
-    document.getElementById('text-color').addEventListener('input', function() {
+    // Function to change text color
+    function changeTextColor() {
         ctx.strokeStyle = this.value;
-    });
+    }
 
-    // Background color functionality
-    document.getElementById('background-color').addEventListener('input', function() {
+    // Function to change background color
+    function changeBackgroundColor() {
         canvas.style.backgroundColor = this.value;
-    });
+    }
 
-    // Font size picker functionality
-    document.getElementById('font-size').addEventListener('change', function() {
+    // Function to change font size
+    function changeFontSize() {
         var fontSize = this.value + 'px';
         ctx.font = getFontStyle(fontSize);
         ctx.lineWidth = this.value; // Update line width based on font size picker
-    });
+    }
 
-    // Font weight functionality
-    document.getElementById('font-weight').addEventListener('change', function() {
+    // Function to change font weight
+    function changeFontWeight() {
         var fontSize = document.getElementById('font-size').value + 'px';
         ctx.font = getFontStyle(fontSize);
-    });
+    }
 
     // Function to get font style based on current settings
     function getFontStyle(fontSize) {

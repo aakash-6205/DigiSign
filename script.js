@@ -2,12 +2,14 @@ document.addEventListener("DOMContentLoaded", function() {
     var canvas = document.getElementById('signature-pad');
     var ctx = canvas.getContext('2d');
     var isDrawing = false;
-    var points = [];
+    var lastX = 0;
+    var lastY = 0;
+    var defaultFontSize = 20;
+    var defaultFontWeight = 'normal';
     
-    // Set initial styles
+    // Set initial font style
+    ctx.font = defaultFontWeight + ' ' + defaultFontSize + 'px Arial';
     ctx.strokeStyle = '#000'; // Default color
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
 
     // Signature pad functionality for mouse events
     canvas.addEventListener('mousedown', startDrawing);
@@ -35,46 +37,92 @@ document.addEventListener("DOMContentLoaded", function() {
     // Font size picker functionality
     document.getElementById('font-size').addEventListener('change', changeFontSize);
 
+    // Font weight functionality
+    document.getElementById('font-weight').addEventListener('change', changeFontWeight);
+
     // Function to start drawing
     function startDrawing(e) {
         isDrawing = true;
-        points.push({ x: e.offsetX, y: e.offsetY });
+        [lastX, lastY] = [e.offsetX, e.offsetY];
     }
 
     // Function to draw
     function draw(e) {
         if (!isDrawing) return;
-        points.push({ x: e.offsetX, y: e.offsetY });
-        smoothDraw();
+        ctx.lineWidth = document.getElementById('font-size').value; // Update line width based on font size picker
+        
+        var newX = e.offsetX;
+        var newY = e.offsetY;
+
+        // Check if the movement is less than a threshold
+        var dx = newX - lastX;
+        var dy = newY - lastY;
+        var threshold = 1;
+        
+        if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) {
+            // Draw a dot
+            ctx.beginPath();
+            ctx.arc(newX, newY, ctx.lineWidth / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            // Draw a line
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(newX, newY);
+            ctx.stroke();
+        }
+
+        [lastX, lastY] = [newX, newY];
     }
 
     // Function to stop drawing
     function stopDrawing() {
         isDrawing = false;
-        points = [];
     }
 
     // Function to start drawing for touch events
     function startDrawingTouch(e) {
-        e.preventDefault();
         isDrawing = true;
         var touch = e.touches[0];
-        points.push({ x: touch.clientX - canvas.offsetLeft, y: touch.clientY - canvas.offsetTop });
+        var rect = canvas.getBoundingClientRect();
+        [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
     }
 
     // Function to draw for touch events
     function drawTouch(e) {
-        e.preventDefault();
         if (!isDrawing) return;
         var touch = e.touches[0];
-        points.push({ x: touch.clientX - canvas.offsetLeft, y: touch.clientY - canvas.offsetTop });
-        smoothDraw();
+        var rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = document.getElementById('font-size').value; // Update line width based on font size picker
+        var newX = touch.clientX - rect.left;
+        var newY = touch.clientY - rect.top;
+
+        // Check if the movement is less than a threshold
+        var dx = newX - lastX;
+        var dy = newY - lastY;
+        var threshold = 1;
+        
+        if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) {
+            // Draw a dot
+            ctx.beginPath();
+            ctx.arc(newX, newY, ctx.lineWidth / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            // Draw a line
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(newX, newY);
+            ctx.stroke();
+        }
+
+        [lastX, lastY] = [newX, newY];
     }
 
     // Function to stop drawing for touch events
     function stopDrawingTouch() {
         isDrawing = false;
-        points = [];
     }
 
     // Function to clear the canvas
@@ -103,23 +151,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Function to change font size
     function changeFontSize() {
-        ctx.lineWidth = this.value;
+        var fontSize = this.value + 'px';
+        ctx.font = getFontStyle(fontSize);
+        ctx.lineWidth = this.value; // Update line width based on font size picker
     }
 
-    // Function to draw smoothed curve
-    function smoothDraw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
+    // Function to change font weight
+    function changeFontWeight() {
+        var fontSize = document.getElementById('font-size').value + 'px';
+        ctx.font = getFontStyle(fontSize);
+    }
 
-        for (var i = 1; i < points.length - 2; i++) {
-            var xc = (points[i].x + points[i + 1].x) / 2;
-            var yc = (points[i].y + points[i + 1].y) / 2;
-            ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
-        }
-
-        // For the last 2 points
-        ctx.quadraticCurveTo(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
-        ctx.stroke();
+    // Function to get font style based on current settings
+    function getFontStyle(fontSize) {
+        var fontWeight = document.getElementById('font-weight').value;
+        return fontWeight + ' ' + fontSize + ' Arial';
     }
 });
